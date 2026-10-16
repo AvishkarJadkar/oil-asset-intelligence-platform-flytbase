@@ -10,7 +10,7 @@ Please have all three set up and tested before the hackathon so you can start bu
 
 # Sample Dataset
 
-Repository: `<REPO-URL>`
+Repository: [github.com/FlytBaseAILabs/flytbase-ahc-swe-asset-intelligence-dataset](https://github.com/FlytBaseAILabs/flytbase-ahc-swe-asset-intelligence-dataset)
 
 The repository holds the challenge documents and the sample dataset you build on. There is no starter app: you choose your own language, framework, storage and models, and build the copilot from scratch.
 
@@ -25,8 +25,8 @@ The repository holds the challenge documents and the sample dataset you build on
 Clone the repository and go into its folder:
 
 ```
-git clone <REPO-URL>
-cd <repo-folder>
+git clone https://github.com/FlytBaseAILabs/flytbase-ahc-swe-asset-intelligence-dataset.git
+cd flytbase-ahc-swe-asset-intelligence-dataset
 ```
 
 List the folder. You should see the challenge documents and a `sample-data` folder with `fleet` and `assets` inside it.
