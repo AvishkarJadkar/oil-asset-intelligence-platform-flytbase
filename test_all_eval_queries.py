@@ -36,9 +36,10 @@ for idx, (user, q) in enumerate(test_cases, 1):
     try:
         with urllib.request.urlopen(req) as resp:
             data = json.loads(resp.read().decode("utf-8"))
-            ans_snippet = data['answer'][:90].replace('\n', ' ')
+            ans_snippet = (data.get('answer') or "")[:90].replace('\n', ' ')
             vtype = data.get('visual_type') or 'text'
-            print(f"[{idx:02d}] {user[:12]:12} | Visual: {vtype:11} | Answer: {ans_snippet}...")
+            safe_snippet = ans_snippet.encode('ascii', errors='replace').decode('ascii')
+            print(f"[{idx:02d}] {user[:12]:12} | Visual: {vtype:11} | Answer: {safe_snippet}...")
             passed += 1
     except Exception as e:
         print(f"[{idx:02d}] FAILED: {e}")

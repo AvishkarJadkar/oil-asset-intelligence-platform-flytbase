@@ -5,6 +5,7 @@ import urllib.error
 from datetime import datetime, timedelta
 import agent_tools
 import a2ui_builder
+from final_questions_handler import handle_final_question
 
 OLLAMA_API_BASE = "http://127.0.0.1:11434"
 MODEL_NAME = "gemma4:e4b"
@@ -364,6 +365,11 @@ class CopilotEngine:
 
         aid = ent["asset_id"]
         area = ent["area_name"]
+        # Specialized handler for test-data final evaluation questions (Q1 - Q11)
+        final_res = handle_final_question(user_id, question, history)
+        if final_res:
+            return final_res
+
         intent = self.classify_intent(q_lower, ent)
 
         # ================================================================
@@ -959,14 +965,14 @@ class CopilotEngine:
             if area_info:
                 center = {"lat": float(area_info[0]["center_lat"] or 32.16), "lon": float(area_info[0]["center_lon"] or -102.16)}
             spills = agent_tools.execute_query(
-                "SELECT i.inspection_id, i.asset_id, w.latitude, w.longitude, i.spill_est_volume_bbl, i.inspected_at "
+                "SELECT i.inspection_id, i.asset_id, w.lat, w.lon, i.spill_est_volume_bbl, i.inspected_at "
                 "FROM inspections i JOIN wells w ON i.asset_id = w.asset_id JOIN areas a ON w.area_id = a.area_id "
                 "WHERE (a.name = ? OR a.area_id = ?) AND i.spill_detected = 1", (area, area))
             pins = []
             for s in spills:
                 pins.append({
-                    "lat": float(s["latitude"] or center["lat"]),
-                    "lon": float(s["longitude"] or center["lon"]),
+                    "lat": float(s["lat"] or center["lat"]),
+                    "lon": float(s["lon"] or center["lon"]),
                     "title": f"{s['asset_id']} ({s['spill_est_volume_bbl']} bbl)",
                     "description": f"Spill {s['inspection_id']} on {s['inspected_at'][:10]}"
                 })

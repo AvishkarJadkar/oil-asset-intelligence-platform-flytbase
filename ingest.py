@@ -42,7 +42,11 @@ def init_db(db_path=DB_PATH):
         last_inspection_id TEXT,
         last_inspection_at TEXT,
         last_inspector_id TEXT,
-        equipment_json TEXT
+        equipment_json TEXT,
+        status TEXT,
+        decommissioned_on TEXT,
+        type_history_json TEXT,
+        team_history_json TEXT
     );
 
     CREATE TABLE inspections (
@@ -59,7 +63,8 @@ def init_db(db_path=DB_PATH):
         spill_area_pct REAL,
         spill_est_volume_bbl REAL,
         evidence_images_json TEXT,
-        notes TEXT
+        notes TEXT,
+        recorded_at TEXT
     );
 
     CREATE INDEX idx_inspections_asset ON inspections(asset_id);
@@ -82,7 +87,9 @@ def init_db(db_path=DB_PATH):
         parts_cost REAL,
         total_cost REAL,
         triggered_by_inspection_id TEXT,
-        report_file TEXT
+        report_file TEXT,
+        recorded_at TEXT,
+        cost_revision_json TEXT
     );
 
     CREATE INDEX idx_maint_asset ON maintenance(asset_id);
@@ -286,7 +293,7 @@ def ingest_all(data_dir="sample-data", db_path=DB_PATH):
         cur.execute('INSERT INTO docs (doc_id, category, title, content) VALUES (?, ?, ?, ?)',
                     (doc_id, "manual", f"{doc_id} Manual", content))
 
-    # Well types threshold map
+    # Well types threshold map: T200=15, T350=20, T500=15 (default)
     well_types_map = {}
 
     # 4. Wells metadata
@@ -307,14 +314,19 @@ def ingest_all(data_dir="sample-data", db_path=DB_PATH):
             INSERT INTO wells (
                 asset_id, name, asset_category, well_type, area_id, team_id,
                 in_charge_user_id, lat, lon, installed_on, recorded_status,
-                last_inspection_id, last_inspection_at, last_inspector_id, equipment_json
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                last_inspection_id, last_inspection_at, last_inspector_id, equipment_json,
+                status, decommissioned_on, type_history_json, team_history_json
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
             meta["asset_id"], meta.get("name"), meta.get("asset_category"), meta.get("well_type"),
             meta.get("area_id"), meta.get("team_id"), meta.get("in_charge_user_id"),
             loc.get("lat"), loc.get("lon"), meta.get("installed_on"), meta.get("recorded_status"),
             last_insp.get("inspection_id"), last_insp.get("inspected_at"), last_insp.get("inspector_user_id"),
-            json.dumps(meta.get("equipment", []))
+            json.dumps(meta.get("equipment", [])),
+            meta.get("status"),
+            meta.get("decommissioned_on"),
+            json.dumps(meta.get("type_history")) if meta.get("type_history") else None,
+            json.dumps(meta.get("team_history")) if meta.get("team_history") else None
         ))
 
     # 5. Inspections, Maintenance, Reports, Regulatory, Context
@@ -334,7 +346,7 @@ def ingest_all(data_dir="sample-data", db_path=DB_PATH):
     for wdir in well_dirs:
         asset_id = os.path.basename(wdir)
         wtype = well_types_map.get(asset_id, "T200")
-        temp_threshold = 20.0 if wtype == "T350" else 15.0
+        temp_threshold = 20.0 if wtype == "T350" else 15.0  # T200 and T500 use 15°C
 
         # Inspections
         inspections = load_jsonl(os.path.join(wdir, "inspections.jsonl"))
@@ -363,7 +375,8 @@ def ingest_all(data_dir="sample-data", db_path=DB_PATH):
                 insp.get("spill_area_pct"),
                 insp.get("spill_est_volume_bbl"),
                 json.dumps(insp.get("evidence_images") or []),
-                insp.get("notes") or ""
+                insp.get("notes") or "",
+                insp.get("recorded_at")
             ))
         total_inspections += len(inspections)
 
@@ -387,7 +400,9 @@ def ingest_all(data_dir="sample-data", db_path=DB_PATH):
                 cost.get("parts"),
                 cost.get("total"),
                 m.get("triggered_by_inspection_id"),
-                m.get("report_file")
+                m.get("report_file"),
+                m.get("recorded_at"),
+                json.dumps(m.get("cost_revision")) if m.get("cost_revision") else None
             ))
         total_maintenance += len(maint_list)
 
@@ -440,8 +455,11 @@ def ingest_all(data_dir="sample-data", db_path=DB_PATH):
                 n.get("valid_from"),
                 n.get("valid_to")
             ))
-            # If it's a correction, seed it into corrections table
-            if n.get("note_type") == "correction" and n.get("inspection_id"):
+            # If it's a correction or data_correction, seed it into corrections table
+            if n.get("note_type") in ("correction", "data_correction") and n.get("inspection_id"):
+                field_name = n.get("field", "spill_detected")
+                original_val = n.get("original_value", "true")
+                corrected_val = n.get("corrected_value", "false")
                 cur.execute('''
                     INSERT INTO corrections (
                         asset_id, inspection_id, field_name, original_value,
@@ -450,9 +468,9 @@ def ingest_all(data_dir="sample-data", db_path=DB_PATH):
                 ''', (
                     asset_id,
                     n["inspection_id"],
-                    "spill_detected",
-                    "true",
-                    "false",
+                    field_name,
+                    original_val,
+                    corrected_val,
                     n.get("author_user_id"),
                     n.get("text"),
                     "well",
@@ -462,11 +480,11 @@ def ingest_all(data_dir="sample-data", db_path=DB_PATH):
 
     print("Inserting batches into SQLite...")
     cur.executemany('''
-        INSERT INTO inspections VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO inspections VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', insp_batch)
 
     cur.executemany('''
-        INSERT INTO maintenance VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO maintenance VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', maint_batch)
 
     cur.executemany('''
@@ -493,4 +511,6 @@ def ingest_all(data_dir="sample-data", db_path=DB_PATH):
     print(f"- Context notes: {total_notes}")
 
 if __name__ == "__main__":
-    ingest_all()
+    import sys
+    data_dir = sys.argv[1] if len(sys.argv) > 1 else "sample-data"
+    ingest_all(data_dir=data_dir)
