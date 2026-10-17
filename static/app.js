@@ -706,5 +706,26 @@ document.addEventListener("DOMContentLoaded", () => {
         appendMessage("assistant", "Copilot Intelligence", `Welcome, **${userId}**! Active session initialized with Google A2UI protocol. You can ask any question, inspect telemetry, or click quick actions on cards.`);
     }
 
+    async function fetchFieldStats() {
+        try {
+            const res = await fetch('/api/stats');
+            if (res.ok) {
+                const s = await res.json();
+                const elWells = document.getElementById('stat-wells');
+                const elInsp = document.getElementById('stat-inspections');
+                const elMaint = document.getElementById('stat-maint');
+                const elSpills = document.getElementById('stat-spills');
+
+                if (elWells && s.wells != null) elWells.textContent = s.wells.toLocaleString();
+                if (elInsp && s.inspections != null) elInsp.textContent = (s.inspections >= 1000 ? (s.inspections / 1000).toFixed(1) + 'k' : s.inspections);
+                if (elMaint && s.maintenance_jobs != null) elMaint.textContent = (s.maintenance_jobs >= 1000 ? (s.maintenance_jobs / 1000).toFixed(1) + 'k' : s.maintenance_jobs);
+                if (elSpills && s.spills_detected != null) elSpills.textContent = s.spills_detected.toLocaleString();
+            }
+        } catch (e) {
+            console.warn("Failed to fetch live field stats:", e);
+        }
+    }
+
     updateUserBadge();
+    fetchFieldStats();
 });
