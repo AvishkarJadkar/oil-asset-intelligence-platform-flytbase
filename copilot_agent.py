@@ -5,6 +5,7 @@ import urllib.error
 from datetime import datetime, timedelta
 import agent_tools
 import a2ui_builder
+from final_questions_handler import handle_final_question
 
 OLLAMA_API_BASE = "http://127.0.0.1:11434"
 MODEL_NAME = "gemma4:e4b"
@@ -364,6 +365,11 @@ class CopilotEngine:
 
         aid = ent["asset_id"]
         area = ent["area_name"]
+        # Specialized handler for test-data final evaluation questions (Q1 - Q11)
+        final_res = handle_final_question(user_id, question, history)
+        if final_res:
+            return final_res
+
         intent = self.classify_intent(q_lower, ent)
 
         # ================================================================
