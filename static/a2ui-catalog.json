@@ -1,0 +1,202 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "A2UI Oilfield Asset Intelligence Component Catalog",
+  "description": "Google Agent-to-User Interface (A2UI) v0.9.1 specification compliant component catalog for Oilfield Asset Intelligence Copilot",
+  "version": "0.9.1",
+  "catalogId": "https://a2ui.org/specification/v0_9_1/catalogs/oilwell_intelligence/catalog.json",
+  "components": {
+    "Column": {
+      "description": "Vertical flex container arranging child components sequentially.",
+      "properties": {
+        "children": {
+          "type": "object",
+          "properties": {
+            "explicitList": { "type": "array", "items": { "type": "string" } }
+          },
+          "required": ["explicitList"]
+        },
+        "gap": { "type": "string", "enum": ["none", "sm", "md", "lg"] }
+      }
+    },
+    "Row": {
+      "description": "Horizontal flex container arranging child components side by side.",
+      "properties": {
+        "children": {
+          "type": "object",
+          "properties": {
+            "explicitList": { "type": "array", "items": { "type": "string" } }
+          },
+          "required": ["explicitList"]
+        },
+        "gap": { "type": "string", "enum": ["none", "sm", "md", "lg"] },
+        "wrap": { "type": "boolean" }
+      }
+    },
+    "Card": {
+      "description": "Glassmorphism elevated surface container with optional header, badge, and child content.",
+      "properties": {
+        "title": { "type": "string" },
+        "subtitle": { "type": "string" },
+        "badge": { "type": "string" },
+        "badgeVariant": { "type": "string", "enum": ["success", "warning", "danger", "info", "neutral"] },
+        "child": { "type": "string" }
+      }
+    },
+    "Text": {
+      "description": "Declarative text component with markdown formatting and typography usage hints.",
+      "properties": {
+        "text": {
+          "type": "object",
+          "properties": {
+            "literalString": { "type": "string" },
+            "path": { "type": "string" }
+          }
+        },
+        "usageHint": { "type": "string", "enum": ["h1", "h2", "h3", "body", "caption", "code"] }
+      }
+    },
+    "Button": {
+      "description": "Interactive action button that dispatches agent requests.",
+      "properties": {
+        "child": { "type": "string" },
+        "variant": { "type": "string", "enum": ["primary", "secondary", "ghost", "danger"] },
+        "action": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string" },
+            "context": { "type": "object" }
+          },
+          "required": ["name"]
+        }
+      }
+    },
+    "TelemetryHero": {
+      "description": "Real-time thermal telemetry hero card with dual temperature gauges, operating threshold limit, and inspector verification state.",
+      "properties": {
+        "assetId": { "type": "string" },
+        "name": { "type": "string" },
+        "wellType": { "type": "string" },
+        "areaId": { "type": "string" },
+        "isProducing": { "type": "boolean" },
+        "recordedStatus": { "type": "string" },
+        "wellheadTemp": { "type": "number" },
+        "ambientTemp": { "type": "number" },
+        "deltaTemp": { "type": "number" },
+        "threshold": { "type": "number" },
+        "inspectionId": { "type": "string" },
+        "inspectedAt": { "type": "string" },
+        "inspector": { "type": "string" },
+        "method": { "type": "string" },
+        "inspectorNotes": { "type": "string" },
+        "corrected": { "type": "boolean" },
+        "correctedBy": { "type": "string" }
+      },
+      "required": ["assetId", "isProducing", "deltaTemp", "threshold"]
+    },
+    "DataGrid": {
+      "description": "Interactive data grid with sortable columns, pagination, and status highlight pills.",
+      "properties": {
+        "title": { "type": "string" },
+        "headers": { "type": "array", "items": { "type": "string" } },
+        "rows": { "type": "array", "items": { "type": "array" } },
+        "highlightColumn": { "type": "string" }
+      },
+      "required": ["headers", "rows"]
+    },
+    "TrendLineChart": {
+      "description": "Multi-series time-series chart with operating manual threshold line.",
+      "properties": {
+        "title": { "type": "string" },
+        "xKey": { "type": "string" },
+        "series": { "type": "array", "items": { "type": "string" } },
+        "data": { "type": "array", "items": { "type": "object" } },
+        "threshold": { "type": "number" }
+      },
+      "required": ["title", "series", "data"]
+    },
+    "RankingBarChart": {
+      "description": "Comparative horizontal or vertical bar ranking chart.",
+      "properties": {
+        "title": { "type": "string" },
+        "categoryKey": { "type": "string" },
+        "valueKey": { "type": "string" },
+        "data": { "type": "array", "items": { "type": "object" } }
+      },
+      "required": ["title", "categoryKey", "valueKey", "data"]
+    },
+    "GeoSpatialMap": {
+      "description": "Dark-themed interactive Leaflet geospatial map with well status markers and coordinates.",
+      "properties": {
+        "title": { "type": "string" },
+        "center": {
+          "type": "object",
+          "properties": {
+            "lat": { "type": "number" },
+            "lon": { "type": "number" }
+          }
+        },
+        "zoom": { "type": "integer" },
+        "pins": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "lat": { "type": "number" },
+              "lon": { "type": "number" },
+              "label": { "type": "string" },
+              "status": { "type": "string" },
+              "details": { "type": "string" }
+            }
+          }
+        }
+      },
+      "required": ["title", "pins"]
+    },
+    "DensityHeatmap": {
+      "description": "2D Matrix density heatmap for spatial/temporal risk distributions.",
+      "properties": {
+        "title": { "type": "string" },
+        "months": { "type": "array", "items": { "type": "string" } },
+        "areas": { "type": "array", "items": { "type": "string" } },
+        "data": { "type": "array", "items": { "type": "array", "items": { "type": "number" } } }
+      },
+      "required": ["title", "months", "areas", "data"]
+    },
+    "ComplianceCallout": {
+      "description": "Prominent compliance alert banner highlighting standard operating procedure breaches or safety limits.",
+      "properties": {
+        "severity": { "type": "string", "enum": ["critical", "warning", "info", "success"] },
+        "title": { "type": "string" },
+        "ruleId": { "type": "string" },
+        "description": { "type": "string" },
+        "actionRequired": { "type": "string" }
+      },
+      "required": ["severity", "title", "description"]
+    },
+    "ActionResponseGroup": {
+      "description": "Row of contextual two-way action buttons generating subsequent conversational follow-up queries.",
+      "properties": {
+        "actions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": { "type": "string" },
+              "query": { "type": "string" },
+              "variant": { "type": "string" }
+            },
+            "required": ["label", "query"]
+          }
+        }
+      },
+      "required": ["actions"]
+    },
+    "CitationBadges": {
+      "description": "Evidence citation tray linking answers to authoritative source records.",
+      "properties": {
+        "citations": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["citations"]
+    }
+  }
+}

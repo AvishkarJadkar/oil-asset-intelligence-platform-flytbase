@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asset Intelligence Copilot | Oil Field Intelligence</title>
+    <meta name="description" content="AI Copilot for Oil Field Asset Intelligence with Generative UI, Multi-level Memory, and Domain Compliance">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Chart.js for high-fidelity interactive line/bar charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <!-- Leaflet for interactive maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Marked for Markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="brand">
+                    <div class="brand-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                        </svg>
+                    </div>
+                    <div class="brand-text">
+                        <h2>AssetCopilot</h2>
+                        <span class="badge-live">FIELD INTELLIGENCE</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Switcher (Memory isolation & role management) -->
+            <div class="user-panel card-glass">
+                <label for="user-select" class="section-label">Active User Session</label>
+                <div class="select-wrapper">
+                    <select id="user-select" aria-label="Select User">
+                        <option value="Michael Turner">Michael Turner (Prod. Supervisor)</option>
+                        <option value="Jessica Reed">Jessica Reed (Field Inspector)</option>
+                        <option value="Jake Morales">Jake Morales (Field Operator)</option>
+                        <option value="Laura Simmons">Laura Simmons (HSE Officer)</option>
+                        <option value="Tyler Hughes">Tyler Hughes (Field Operator)</option>
+                    </select>
+                </div>
+                <div class="user-meta" id="user-meta">
+                    <span class="role-tag" id="user-role-badge">Supervisor</span>
+                    <span class="team-tag" id="user-team-badge">Northeast Prod</span>
+                </div>
+            </div>
+
+            <!-- Field Overview Stats -->
+            <div class="stats-panel card-glass">
+                <div class="section-label">Field Status (16 Oct 2026)</div>
+                <div class="stat-grid">
+                    <div class="stat-item">
+                        <span class="stat-value" id="stat-wells">200</span>
+                        <span class="stat-label">Total Wells</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="stat-inspections">39.6k</span>
+                        <span class="stat-label">Inspections</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="stat-maint">5.7k</span>
+                        <span class="stat-label">Repairs</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value text-amber" id="stat-spills">90</span>
+                        <span class="stat-label">Events</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Evaluation Scenario Quick Launcher -->
+            <div class="scenarios-panel card-glass">
+                <div class="section-label">Quick Test Scenarios</div>
+                <div class="scenario-buttons">
+                    <button class="btn-scenario" data-query="Is WELL-0001 producing oil right now? When was it last inspected, and by whom? Show me its status card.">
+                        <span class="scen-id">Q1</span> WELL-0001 Status Card
+                    </button>
+                    <button class="btn-scenario" data-query="Which wells in Northeast Block 8 are not producing oil right now, and why? Show them in a table.">
+                        <span class="scen-id">Q2</span> NE Block 8 Downtime Table
+                    </button>
+                    <button class="btn-scenario" data-query="Show a line chart of WELL-0001's wellhead temperature against air temperature for the last 13 weeks, and mark when it was not producing oil.">
+                        <span class="scen-id">Q3</span> 13-Week Temp Line Chart
+                    </button>
+                    <button class="btn-scenario" data-query="How many oil spills has WELL-0001 had in the last 4 years, and how much oil in total? List them in a table.">
+                        <span class="scen-id">Q4</span> WELL-0001 Spills (Rainwater filtered)
+                    </button>
+                    <button class="btn-scenario" data-query="How many days was WELL-0001 down in 2025?">
+                        <span class="scen-id">Q5</span> WELL-0001 Downtime (2025)
+                    </button>
+                    <button class="btn-scenario" data-query="Which 3 wells in Northeast Block 7 had the most downtime in the last 4 months? Show a bar chart.">
+                        <span class="scen-id">Q6</span> NE Block 7 Downtime Bar Chart
+                    </button>
+                    <button class="btn-scenario" data-query="Show on a map every well in Northeast Block 8 with a real spill in the last 90 days.">
+                        <span class="scen-id">Q7</span> Spill Map (NE Block 8)
+                    </button>
+                    <button class="btn-scenario" data-query="Show a heatmap of 2026 spills by geographic area and month.">
+                        <span class="scen-id">Q8</span> Spills Heatmap (Area × Month)
+                    </button>
+                    <button class="btn-scenario" data-query="Which rules has WELL-0001 broken in the last 12 months, and what is still open?">
+                        <span class="scen-id">Q9</span> WELL-0001 Rule Breaches
+                    </button>
+                    <button class="btn-scenario" data-query="In Southwest Block 24, which spills in the last 90 days were not contained within the SOP time limit?">
+                        <span class="scen-id">Q10</span> SW Block 24 Containment Delays
+                    </button>
+                    <button class="btn-scenario" data-query="For the three wells we discussed yesterday, what have repairs cost this year?">
+                        <span class="scen-id">Q11</span> Multi-turn Private Memory
+                    </button>
+                    <button class="btn-scenario" data-query="The 15 Oct reading for WELL-0164 is wrong. The handheld thermal gun used in that inspection was faulty; the field crew re-measured the wellhead at 41.0 °C.">
+                        <span class="scen-id">Q12</span> Correct Raw Sensor Data
+                    </button>
+                    <button class="btn-scenario" data-query="The AI estimated the 24 Sep spill at WELL-0151 as 4.5 bbl. The field crew measured 5.4 bbl.">
+                        <span class="scen-id">Q13</span> Correct AI Spill Volume
+                    </button>
+                    <button class="btn-scenario" data-query="Note for all T350 wells: our team now wants a pump jack root-cause analysis after 2 repairs, not 3.">
+                        <span class="scen-id">Q14</span> Custom Well-Type Rule
+                    </button>
+                    <button class="btn-scenario" data-query="Tyler Hughes: WELL-0175 is running fine.">
+                        <span class="scen-id">Q17</span> Conflict / Contradiction Flag
+                    </button>
+                    <button class="btn-scenario" data-query="Was the 20 Aug spill at WELL-0101 real oil?">
+                        <span class="scen-id">Q18</span> AI & Sample Disagreement
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Chat Area -->
+        <main class="chat-container">
+            <header class="chat-topbar">
+                <div class="topbar-info">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <h1 class="page-title">Operational Chat & Generative Analytics</h1>
+                        <span class="badge-a2ui" title="Google Agent-to-User Interface (A2UI) Declarative Generative UI Specification">A2UI PROTOCOL v1.0</span>
+                    </div>
+                    <p class="subtitle">Agent-driven Generative UI grounded in inspections, maintenance telemetry, SOPs & field memory</p>
+                </div>
+                <div class="topbar-actions">
+                    <button class="btn-secondary" id="btn-toggle-a2ui-inspector" title="Toggle A2UI Declarative Schema Inspector">Inspect A2UI Schema</button>
+                    <button class="btn-secondary" id="btn-clear-chat" title="Clear current view">Clear View</button>
+                </div>
+            </header>
+
+            <!-- Chat Stream -->
+            <div class="chat-stream" id="chat-stream">
+                <!-- Welcome Message -->
+                <div class="message-wrapper assistant">
+                    <div class="message-avatar">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                        </svg>
+                    </div>
+                    <div class="message-content card-glass">
+                        <div class="message-header">
+                            <span class="sender-name">Copilot Intelligence</span>
+                            <span class="msg-time">Just now</span>
+                        </div>
+                        <div class="message-text">
+                            Hello! I am your <strong>Asset Intelligence Copilot</strong>. I monitor 200 oil wells across all 4 operational blocks with weekly drone inspections, maintenance records, SOP compliance, and live operator feedback.
+                            <br><br>
+                            Ask me any question or choose a scenario from the left panel. Answers are generated inline with cards, tables, charts, maps, or heatmaps based on your request.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Bar -->
+            <div class="chat-input-wrapper">
+                <form id="chat-form" class="chat-input-form card-glass">
+                    <textarea 
+                        id="user-input" 
+                        placeholder="Ask about well status, downtime, spills, SOP compliance, or enter field feedback..." 
+                        rows="1"
+                        required></textarea>
+                    <button type="submit" id="btn-send" class="btn-primary" aria-label="Send Message">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <!-- Google A2UI Protocol Inspector & GenUI Live Playground Modal -->
+    <div class="a2ui-modal-overlay" id="a2ui-inspector-modal">
+        <div class="a2ui-modal-container">
+            <div class="a2ui-modal-header">
+                <div class="a2ui-modal-title">
+                    <span>⚡</span> Google A2UI Protocol Inspector & GenUI Playground
+                    <span class="badge-a2ui" style="margin-left: 8px;">v0.9.1 SPEC</span>
+                </div>
+                <button class="a2ui-modal-close" id="btn-close-modal" aria-label="Close Modal">&times;</button>
+            </div>
+            <div class="a2ui-modal-tabs">
+                <button class="a2ui-tab-btn active" data-tab="tab-stream">📡 Live Protocol Stream (JSONL)</button>
+                <button class="a2ui-tab-btn" data-tab="tab-playground">🎨 GenUI Live Playground</button>
+                <button class="a2ui-tab-btn" data-tab="tab-catalog">📖 Component Catalog Schema</button>
+            </div>
+            <div class="a2ui-modal-body">
+                <!-- Tab 1: Live Protocol Stream -->
+                <div class="a2ui-tab-panel active" id="tab-stream">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:0.85rem; color:var(--text-secondary);">Real-time stream of <code>createSurface</code>, <code>updateComponents</code>, and <code>updateDataModel</code> JSON lines emitted by Copilot:</span>
+                        <button class="btn-secondary" id="btn-copy-stream" style="padding:4px 10px; font-size:0.75rem;">📋 Copy Stream</button>
+                    </div>
+                    <textarea class="a2ui-stream-editor" id="a2ui-stream-output" readonly spellcheck="false">// Waiting for agent response...</textarea>
+                </div>
+
+                <!-- Tab 2: GenUI Live Playground -->
+                <div class="a2ui-tab-panel" id="tab-playground">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:0.85rem; color:var(--text-secondary);">Edit or paste any A2UI declarative JSON payload below to test interactive Generative UI rendering in real-time:</span>
+                        <button class="btn-primary" id="btn-render-playground" style="padding:4px 12px; font-size:0.8rem;">▶️ Render Live Surface</button>
+                    </div>
+                    <textarea class="a2ui-stream-editor" id="a2ui-playground-input" spellcheck="false" style="min-height: 200px;"></textarea>
+                    <div>
+                        <div style="font-size:0.82rem; font-weight:600; color:var(--text-secondary); margin-bottom: 6px;">Live Rendered Output:</div>
+                        <div class="a2ui-preview-sandbox" id="a2ui-playground-preview">
+                            <span style="color:#64748b; font-size:0.85rem;">Click "Render Live Surface" to preview GenUI components.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 3: Component Catalog Schema -->
+                <div class="a2ui-tab-panel" id="tab-catalog">
+                    <div style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:8px;">
+                        Formal JSON Schema for the Oilfield Asset Intelligence A2UI Catalog (registered at <code>https://a2ui.org/specification/v0_9_1/catalogs/oilwell_intelligence/catalog.json</code>):
+                    </div>
+                    <textarea class="a2ui-stream-editor" id="a2ui-catalog-output" readonly spellcheck="false" style="min-height: 350px;"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/static/a2ui-runtime.js"></script>
+    <script src="/static/app.js"></script>
+</body>
+</html>
